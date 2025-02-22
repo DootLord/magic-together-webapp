@@ -19,7 +19,7 @@ function App() {
 
   // Socket.io
   useEffect(() => {
-    const socket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:3000', {
+    const socket = io({
       transports: ['websocket'],
       autoConnect: false
     }) // Replace with your server URL
