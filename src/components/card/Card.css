@@ -1,0 +1,12 @@
+.card-container {
+    width: 12vw;
+    position:absolute;
+    top: 0;
+    left: 0;
+}
+
+.card-container img {
+    width: inherit;
+    -webkit-user-drag: none;
+    user-select: none;
+}
