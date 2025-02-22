@@ -19,10 +19,10 @@ function App() {
 
   // Socket.io
   useEffect(() => {
-    const socket = io({
+    const socket = io('http://localhost:3000/api', {
       transports: ['websocket'],
       autoConnect: false
-    }) // Replace with your server URL
+    })
 
     socket.on('connect', () => {
       console.log('Connected to socket.io server')
