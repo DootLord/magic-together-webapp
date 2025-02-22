@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import io, { Socket } from 'socket.io-client' // Import the io function
 import './App.css'
-import Card from './components/card/card'
 import { DefaultEventsMap } from 'socket.io'
+import Card from './components/card/Card'
 
 interface CardData {
   id: number
@@ -14,20 +14,18 @@ interface CardData {
 }
 
 function App() {
-  const [isConnected, setIsConnected] = useState(false)
   const [cards, setCards] = useState<CardData[]>([])
   const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null)
 
   // Socket.io
   useEffect(() => {
-    const socket = io({
+    const socket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:3000', {
       transports: ['websocket'],
       autoConnect: false
     }) // Replace with your server URL
 
     socket.on('connect', () => {
       console.log('Connected to socket.io server')
-      setIsConnected(true)
     })
 
     socket.on('cards', (cards: CardData[]) => {

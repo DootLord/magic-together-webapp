@@ -1,7 +1,7 @@
 import "./Card.css"
-import { motion, PanInfo } from "framer-motion"
+import { motion } from "framer-motion"
 import { useDragControls } from "framer-motion";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 
 interface CardProps {
     url: string;
@@ -14,7 +14,7 @@ function Card({ url, x, y, onPositionChange }: CardProps) {
     const controls = useDragControls();
     const cardRef = useRef<HTMLDivElement>(null);
 
-    function handleDragEnd(_event: MouseEvent, info: PanInfo) {
+    function handleDragEnd(_event: MouseEvent) {
         if (cardRef.current) {
             const rect = cardRef.current.getBoundingClientRect();
             const x = rect.left;
