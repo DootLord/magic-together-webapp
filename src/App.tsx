@@ -19,7 +19,7 @@ function App() {
 
   // Socket.io
   useEffect(() => {
-    const socket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000/api', {
+    const socket = io("wss://magic-together-sockets.dootlord.meme", {
       transports: ['websocket'],
       autoConnect: false
     })

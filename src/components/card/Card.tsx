@@ -44,7 +44,7 @@ function Card({ url, x, y, onPositionChange }: CardProps) {
             onMouseUp={handleMouseUp}
             onDragEnd={handleDragEnd}
         >
-            <img src={url} alt="Card Image" />
+            <img src={url} draggable={false} alt="Card Image" />
         </motion.div>
     );
 }
