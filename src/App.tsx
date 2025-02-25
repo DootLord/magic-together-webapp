@@ -49,6 +49,10 @@ function App() {
       if (event.key === 'e') {
         generateNewCard()
       }
+
+      if(event.key === 'r') {
+        clearCards()
+      }
     }
 
     window.addEventListener('keypress', handleKeyPress)
@@ -65,6 +69,14 @@ function App() {
       return
     }
     socketRef.current.emit('newCard')
+  }
+
+  function clearCards() {
+    if (!socketRef.current) {
+      console.error('Socket not connected')
+      return
+    }
+    socketRef.current.emit('clear')
   }
 
   function handleCardPositionChange(index: number, x: number, y: number) {
