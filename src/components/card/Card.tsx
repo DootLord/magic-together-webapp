@@ -7,10 +7,12 @@ interface CardProps {
     url: string;
     x: number;
     y: number;
+    tapped: boolean;
     onPositionChange: (x: number, y: number) => void;
+    onTap: () => void;
 }
 
-function Card({ url, x, y, onPositionChange }: CardProps) {
+function Card({ url, x, y, onPositionChange, tapped, onTap }: CardProps) {
     const controls = useDragControls();
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -34,8 +36,8 @@ function Card({ url, x, y, onPositionChange }: CardProps) {
         <motion.div
             ref={cardRef}
             className='card-container'
-            initial={{ x, y }}
-            animate={{ x, y }}
+            initial={{ x, y, rotate: tapped ? 90 : 0 }}
+            animate={{ x, y, rotate: tapped ? 90 : 0 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             dragControls={controls}
@@ -43,6 +45,7 @@ function Card({ url, x, y, onPositionChange }: CardProps) {
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onDragEnd={handleDragEnd}
+            onDoubleClick={onTap}
         >
             <img src={url} draggable={false} alt="Card Image" />
         </motion.div>

@@ -11,6 +11,7 @@ interface CardData {
   x: number
   y: number
   locked: boolean
+  tapped: boolean
 }
 
 function App() {
@@ -99,6 +100,10 @@ function App() {
     socketRef.current.emit('cardPositionChange', { index, x, y })
   }
 
+  function handleTap(index: number) {
+    socketRef.current?.emit('tap', { index })
+  }
+
   return (
     <div id="play-area">
       {cards.map((card, index) => (
@@ -107,7 +112,9 @@ function App() {
           url={card.url}
           x={card.x}
           y={card.y}
+          tapped={card.tapped}
           onPositionChange={(x: number, y: number) => handleCardPositionChange(index, x, y)}
+          onTap={() => handleTap(index)}
         />
       ))}
     </div>
