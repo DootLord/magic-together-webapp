@@ -6,6 +6,7 @@ import Card from './components/card/Card'
 import { Search, SearchIconWrapper, StyledInputBase } from './defaultMuiStyles'
 import SearchIcon from '@mui/icons-material/Search';
 import { motion } from 'motion/react'
+import { Snackbar } from '@mui/material'
 
 interface CardData {
   id: number
@@ -23,6 +24,7 @@ function App() {
   const showSearchRef = useRef(false)
   const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null)
   const [searchInput, setSearchInput] = useState('')
+  const [openSnackbar, setOpenSnackbar] = useState('')
 
   // Socket.io
   useEffect(() => {
@@ -49,6 +51,10 @@ function App() {
     socket.on('connect_error', (err: any) => {
       console.error('Connection error:', err)
     })
+
+    socket.on('error', (err: any) => {
+      setOpenSnackbar(err)
+    });
 
     socketRef.current = socket
 
@@ -144,6 +150,10 @@ function App() {
     }
   }
 
+  function handleCloseSnackbar() {
+    setOpenSnackbar('')
+  }
+
   return (
     <div id="play-area">
       {cards.map((card, index) => (
@@ -176,6 +186,13 @@ function App() {
           />
         </Search>
       </motion.div>
+
+      <Snackbar
+        open={!!openSnackbar}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        message={openSnackbar}
+      />
     </div>
 
   )
