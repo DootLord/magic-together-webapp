@@ -22,14 +22,7 @@ function Card({ url, x, y, onPositionChange, tapped, onTap }: CardProps) {
             const x = rect.left;
             const y = rect.top;
             onPositionChange(x, y);
-
         }
-    }
-
-    function handleMouseDown() {
-    }
-
-    function handleMouseUp() {
     }
 
     return (
@@ -42,8 +35,8 @@ function Card({ url, x, y, onPositionChange, tapped, onTap }: CardProps) {
             whileTap={{ scale: 0.9 }}
             dragControls={controls}
             drag={true}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
+            // onMouseDown={handleMouseDown}
+            // onMouseUp={handleMouseUp}
             onDragEnd={handleDragEnd}
             onDoubleClick={onTap}
         >

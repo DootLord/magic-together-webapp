@@ -3,6 +3,9 @@ import io, { Socket } from 'socket.io-client' // Import the io function
 import './App.css'
 import { DefaultEventsMap } from 'socket.io'
 import Card from './components/card/Card'
+import { Search, SearchIconWrapper, StyledInputBase } from './defaultMuiStyles'
+import SearchIcon from '@mui/icons-material/Search';
+import { motion } from 'motion/react'
 
 interface CardData {
   id: number
@@ -16,7 +19,10 @@ interface CardData {
 
 function App() {
   const [cards, setCards] = useState<CardData[]>([])
+  const [showSearch, setShowSearch] = useState(false)
+  const showSearchRef = useRef(false)
   const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null)
+  const [searchInput, setSearchInput] = useState('')
 
   // Socket.io
   useEffect(() => {
@@ -47,11 +53,13 @@ function App() {
     socketRef.current = socket
 
     const handleKeyPress = (event: KeyboardEvent) => {
+      if (showSearchRef.current) return; // If we're typing, ignore event keypresses
+
       if (event.key === 'e') {
         generateNewCard()
       }
 
-      if(event.key === 'r') {
+      if (event.key === 'r') {
         clearCards()
       }
     }
@@ -64,12 +72,30 @@ function App() {
     }
   }, [])
 
-  function generateNewCard() {
+  // Keep ref in sync with state
+  useEffect(() => {
+    showSearchRef.current = showSearch
+  }, [showSearch])
+
+  function generateRandomCard() {
     if (!socketRef.current) {
       console.error('Socket not connected')
       return
     }
     socketRef.current.emit('newCard')
+  }
+
+  function generateNewCard() {
+    if (!socketRef.current) return // No socket, no service!
+
+    // We already have the search open, they want a random card. Close the search and generate a random card
+    if (showSearchRef.current) {
+      generateRandomCard()
+      setShowSearch(false)
+      return
+    }
+
+    setShowSearch(true)
   }
 
   function clearCards() {
@@ -104,6 +130,20 @@ function App() {
     socketRef.current?.emit('tap', { index })
   }
 
+  function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setSearchInput(event.target.value)
+  }
+
+  function handleSearchKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter' && searchInput.trim()) {
+      console.log('Searching for:', searchInput)
+      // Emit search to socket
+      socketRef.current?.emit('newCard', { name: searchInput })
+      setSearchInput('')
+      setShowSearch(false)
+    }
+  }
+
   return (
     <div id="play-area">
       {cards.map((card, index) => (
@@ -117,6 +157,25 @@ function App() {
           onTap={() => handleTap(index)}
         />
       ))}
+
+      <motion.div
+        id="search-container"
+        initial={{ scale: 0 }}
+        animate={{ scale: showSearch ? 1 : 0 }}
+      >
+        <Search>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="Search for card..."
+            inputProps={{ 'aria-label': 'search' }}
+            value={searchInput}
+            onChange={handleSearchChange}
+            onKeyDown={handleSearchKeyPress}
+          />
+        </Search>
+      </motion.div>
     </div>
 
   )
