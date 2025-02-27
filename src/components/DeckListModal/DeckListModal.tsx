@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { IDeckInfo } from '../../App';
+import { IDeckInfo } from '../../types/types';
 
 interface DeckListModalProps {
   show: boolean;
