@@ -20,6 +20,8 @@ interface CardData {
 
 export interface IDeckInfo {
   deckName: string;
+  cardCount: number
+  deckListIndex: number;
   date: string;
 }
 
@@ -78,6 +80,11 @@ function App() {
       if (event.key === 's') {
         socket.emit('getDecks')
         setShowServerDecklist((prev) => !prev)
+      }
+
+      // Q - Play top card of selected deck
+      if (event.key === 'q') {
+        socket.emit('playTopCardOfDeck')
       }
     }
 
@@ -169,6 +176,12 @@ function App() {
     socketRef.current?.emit('newDeck', { deckName, deckList })
     setDeckName('')
     setDeckList('')
+    setShowDeckImport(false)
+  }
+
+  function deckListSelect(deck: number) {
+    socketRef.current?.emit('selectDeck', { index: deck })
+    setShowServerDecklist(false)
   }
 
   return (
@@ -242,10 +255,14 @@ function App() {
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => deckListSelect(deck.deckListIndex)}
           >
             <h3 style={{ color: '#fff', margin: 0 }}>{deck.deckName}</h3>
             <p style={{ color: '#888', margin: '8px 0 0 0' }}>
-                {new Date(deck.date).toLocaleString()}
+              {new Date(deck.date).toLocaleString()}
+            </p>
+            <p style={{ color: '#888', margin: '8px 0 0 0' }}>
+              {deck.cardCount} cards
             </p>
           </motion.div>
         ))}
@@ -293,16 +310,26 @@ function App() {
       </motion.div>
 
 
-        <div style={{
-          position: 'fixed',
-          bottom: 10,
-          left: 10,
-          color: 'white',
-          opacity: 0.3,
-          fontSize: '0.8rem'
-        }}>
-          Hotkeys: [E] Add Card | [R] Reset | [D] Deck Import | [S] Saved Decks
-        </div>
+      <div style={{
+        position: 'fixed',
+        bottom: 10,
+        left: 10,
+        color: 'white',
+        opacity: 0.3,
+        fontSize: '0.8rem'
+      }}>
+        Hotkeys: [E] Add Card | [R] Reset | [D] Deck Import | [S] Saved Decks | [Q] Draw Card
+      </div>
+      <div style={{
+        position: 'fixed',
+        bottom: 10,
+        right: 10,
+        color: 'white',
+        opacity: 0.3,
+        fontSize: '0.8rem'
+      }}>
+        Created by <a href="https://github.com/DootLord" style={{ color: 'white' }}>DootLord</a> 2025
+      </div>
 
     </div>
 
