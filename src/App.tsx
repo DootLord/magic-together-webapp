@@ -1,29 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import io, { Socket } from 'socket.io-client' // Import the io function
+import io, { Socket } from 'socket.io-client'
 import './App.css'
 import { DefaultEventsMap } from 'socket.io'
 import Card from './components/card/Card'
-import { Search, SearchIconWrapper, StyledInputBase } from './defaultMuiStyles'
-import SearchIcon from '@mui/icons-material/Search';
-import { motion } from 'motion/react'
-import { Button, Snackbar, TextField } from '@mui/material'
-
-interface CardData {
-  id: number
-  url: string
-  name: string
-  x: number
-  y: number
-  locked: boolean
-  tapped: boolean
-}
-
-export interface IDeckInfo {
-  deckName: string;
-  cardCount: number
-  deckListIndex: number;
-  date: string;
-}
+import { Snackbar } from '@mui/material'
+import { SearchBar } from './components/SearchBar/SearchBar'
+import { DeckImportModal } from './components/DeckImportModal/DeckImportModal'
+import { DeckListModal } from './components/DeckListModal/DeckListModal'
+import { HotkeysDisplay } from './components/HotkeysDisplay/HotkeysDisplay'
+import { CardData, IDeckInfo } from './types/types'
 
 function App() {
   // Socket.io
@@ -231,24 +216,12 @@ function App() {
         />
       ))}
 
-      <motion.div
-        id="search-container"
-        initial={{ scale: 0 }}
-        animate={{ scale: showSearch ? 1 : 0 }}
-      >
-        <Search>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase
-            placeholder="Search for card..."
-            inputProps={{ 'aria-label': 'search' }}
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            onKeyDown={handleSearchKeyPress}
-          />
-        </Search>
-      </motion.div>
+      <SearchBar
+        showSearch={showSearch}
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        onKeyDown={handleSearchKeyPress}
+      />
 
       <Snackbar
         open={!!openSnackbar}
@@ -257,128 +230,23 @@ function App() {
         message={openSnackbar}
       />
 
-      <motion.div
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '80%',
-          maxHeight: '70vh',
-          overflow: 'auto',
-          backgroundColor: '#1e1e1e',
-          padding: '20px',
-          borderRadius: '12px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-          gap: '16px'
-        }}
-        initial={{ opacity: 0 }}
-        animate={showServerDecklist ? { opacity: 1 } : { display: "none", opacity: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        {serverDecklist.map((deck, index) => (
-          <motion.div
-            key={index}
-            style={{
-              backgroundColor: '#2d2d2d',
-              padding: '16px',
-              borderRadius: '8px',
-              cursor: 'pointer'
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => deckListSelect(deck.deckListIndex)}
-          >
-            <h3 style={{ color: '#fff', margin: 0 }}>{deck.deckName}</h3>
-            <p style={{ color: '#888', margin: '8px 0 0 0' }}>
-              {new Date(deck.date).toLocaleString()}
-            </p>
-            <p style={{ color: '#888', margin: '8px 0 0 0' }}>
-              {deck.cardCount} cards
-            </p>
-          </motion.div>
-        ))}
-      </motion.div>
+      <DeckListModal
+        show={showServerDecklist}
+        serverDecklist={serverDecklist}
+        onDeckSelect={deckListSelect}
+      />
 
-      <motion.div
-        style={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          width: '300px',
-          padding: '16px',
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}
-        initial={{ scale: 0 }}
-        animate={{ scale: showDeckImport ? 1 : 0 }}
-      >
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Deck Name"
-          value={deckName}
-          onChange={(e) => setDeckName(e.target.value)}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Paste deck list here..."
-          multiline
-          rows={10}
-          value={deckList}
-          onChange={(e) => setDeckList(e.target.value)}
-        />
-        <Button
-          fullWidth
-          variant="contained"
-          color="primary"
-          onClick={handleDeckSubmit}
-          sx={{ mt: 2 }}
-        >
-          Import Deck
-        </Button>
-      </motion.div>
+      <DeckImportModal
+        show={showDeckImport}
+        deckName={deckName}
+        deckList={deckList}
+        onDeckNameChange={setDeckName}
+        onDeckListChange={setDeckList}
+        onSubmit={handleDeckSubmit}
+      />
 
-
-      <div style={{
-        position: 'fixed',
-        bottom: 10,
-        left: 10,
-        color: 'white',
-        opacity: 0.3,
-        fontSize: '0.8rem'
-      }}>
-        Hotkeys: [E] Add Card | [R] Reset | [D] Deck Import | [S] Saved Decks | [Q] Draw Card
-      </div>
-      <motion.div style={{
-        position: 'fixed',
-        bottom: 10,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        color: 'white',
-        opacity: 0.3,
-        fontSize: '0.8rem'
-      }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: deckCount > 0 ? 1 : 0 }}>
-        Cards in deck: {deckCount}
-      </motion.div>
-      <div style={{
-        position: 'fixed',
-        bottom: 10,
-        right: 10,
-        color: 'white',
-        opacity: 0.3,
-        fontSize: '0.8rem'
-      }}>
-        Created by <a href="https://github.com/DootLord" style={{ color: 'white' }}>DootLord</a> 2025
-      </div>
-
-    </div >
-
+      <HotkeysDisplay deckCount={deckCount} />
+    </div>
   )
 }
 
