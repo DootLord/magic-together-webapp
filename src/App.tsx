@@ -26,19 +26,29 @@ export interface IDeckInfo {
 }
 
 function App() {
-  const [cards, setCards] = useState<CardData[]>([])
-  const [showSearch, setShowSearch] = useState(false)
-  const showSearchRef = useRef(false)
-  const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null)
+  // Socket.io
+  const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null) // Ref to keep socket in scope
+
+  // Board State
+  const [cards, setCards] = useState<CardData[]>([]) // Array of cards on the board.
+
+  // Search State
+  const [showSearch, setShowSearch] = useState(false) // Show the search bar
+  const showSearchRef = useRef(false) // Ref to keep in sync with state (Used programmatically, as state is async)
   const [searchInput, setSearchInput] = useState('')
-  const [openSnackbar, setOpenSnackbar] = useState('')
+
+  // Deck Import State
   const [deckName, setDeckName] = useState('')
   const [deckList, setDeckList] = useState('') // Decklist for exporting to server
   const [showDeckImport, setShowDeckImport] = useState(false)
 
+  // Server Decklist State
   const [showServerDecklist, setShowServerDecklist] = useState(false) // Show the server decklist
   const [serverDecklist, setServerDecklist] = useState<IDeckInfo[]>([]) // List of decks from the server
-  const [deckCount, setDeckCount] = useState(0)
+  const [deckCount, setDeckCount] = useState(0) // Number of cards in the selected deck (WIP in server)
+
+  // Misc/Utility
+  const [openSnackbar, setOpenSnackbar] = useState('') // Snackbar message
 
 
   // Socket.io
@@ -63,30 +73,25 @@ function App() {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (showSearchRef.current) return; // If we're typing, ignore event keypresses
 
-      // E - Generate new card
-      if (event.key === 'e') {
-        generateNewCard()
-      }
-
-      // R - Clear all cards
-      if (event.key === 'r') {
-        clearCards()
-      }
-
-      // D - Show deck import
-      if (event.key === 'd') {
-        setShowDeckImport((prev) => !prev)
-      }
-
-      // S - Show server decklist
-      if (event.key === 's') {
-        socket.emit('getDecks')
-        setShowServerDecklist((prev) => !prev)
-      }
-
-      // Q - Play top card of selected deck
-      if (event.key === 'q') {
-        socket.emit('playTopCardOfDeck')
+      switch (event.key) {
+        case 'e':
+          generateNewCard()
+          break
+        case 'r':
+          clearCards()
+          break
+        case 'd':
+          setShowDeckImport((prev) => !prev)
+          break
+        case 's':
+          socket.emit('getDecks')
+          setShowServerDecklist((prev) => !prev)
+          break
+        case 'q':
+          socket.emit('playTopCardOfDeck')
+          break
+        default:
+          break
       }
     }
 
@@ -103,6 +108,10 @@ function App() {
     showSearchRef.current = showSearch
   }, [showSearch])
 
+  /**
+   * Trigger scoket to generate a random card
+   * @returns 
+   */
   function generateRandomCard() {
     if (!socketRef.current) {
       console.error('Socket not connected')
@@ -111,6 +120,10 @@ function App() {
     socketRef.current.emit('newCard')
   }
 
+  /**
+   * Create a card on the board
+   * @returns 
+   */
   function generateNewCard() {
     if (!socketRef.current) return // No socket, no service!
 
@@ -124,6 +137,10 @@ function App() {
     setShowSearch(true)
   }
 
+  /**
+   * Requests server to clear all cards
+   * @returns 
+   */
   function clearCards() {
     if (!socketRef.current) {
       console.error('Socket not connected')
@@ -132,6 +149,13 @@ function App() {
     socketRef.current.emit('clear')
   }
 
+  /**
+   * Handle card position change
+   * @param index index of the card that has been manipulated
+   * @param x x position of card moved
+   * @param y y position of card moved
+   * @returns 
+   */
   function handleCardPositionChange(index: number, x: number, y: number) {
     console.log(`Card ${index} position changed to (${x}, ${y})`)
     setCards((prevCards) => {
@@ -152,14 +176,18 @@ function App() {
     socketRef.current.emit('cardPositionChange', { index, x, y })
   }
 
+  /**
+   * If a card is tapped, emit to server (done via double click)
+   * @param index 
+   */
   function handleTap(index: number) {
     socketRef.current?.emit('tap', { index })
   }
 
-  function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setSearchInput(event.target.value)
-  }
-
+  /**
+   * Manages "enter" keypress on search bar
+   * @param event 
+   */
   function handleSearchKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter' && searchInput.trim()) {
       console.log('Searching for:', searchInput)
@@ -170,10 +198,9 @@ function App() {
     }
   }
 
-  function handleCloseSnackbar() {
-    setOpenSnackbar('')
-  }
-
+  /**
+   * Handle deck import button, sends decklist to server and clears the input fields/states
+   */
   function handleDeckSubmit() {
     socketRef.current?.emit('newDeck', { deckName, deckList })
     setDeckName('')
@@ -181,6 +208,10 @@ function App() {
     setShowDeckImport(false)
   }
 
+  /**
+   * Handle selecting a deck from the server decklist
+   * @param deck 
+   */
   function deckListSelect(deck: number) {
     socketRef.current?.emit('selectDeck', { index: deck })
     setShowServerDecklist(false)
@@ -213,7 +244,7 @@ function App() {
             placeholder="Search for card..."
             inputProps={{ 'aria-label': 'search' }}
             value={searchInput}
-            onChange={handleSearchChange}
+            onChange={(event) => setSearchInput(event.target.value)}
             onKeyDown={handleSearchKeyPress}
           />
         </Search>
@@ -222,7 +253,7 @@ function App() {
       <Snackbar
         open={!!openSnackbar}
         autoHideDuration={5000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setOpenSnackbar('')}
         message={openSnackbar}
       />
 
