@@ -38,11 +38,12 @@ function App() {
 
   const [showServerDecklist, setShowServerDecklist] = useState(false) // Show the server decklist
   const [serverDecklist, setServerDecklist] = useState<IDeckInfo[]>([]) // List of decks from the server
+  const [deckCount, setDeckCount] = useState(0)
 
 
   // Socket.io
   useEffect(() => {
-    const socket = io('wss://magic-together-sockets.dootlord.meme', {
+    const socket = io('localhost:3000', {
       transports: ['websocket'],
       autoConnect: false
     })
@@ -53,6 +54,7 @@ function App() {
     socket.on('connect_error', (err: any) => { console.error('Connection error:', err) })
     socket.on('error', (err: any) => { setOpenSnackbar(err) });
     socket.on('decks', (decks: IDeckInfo[]) => { console.log(JSON.stringify(decks)); setServerDecklist(decks) })
+    socket.on('deckCountChange', (count: number) => { setDeckCount(count) })
 
     socket.connect()
 
@@ -320,6 +322,19 @@ function App() {
       }}>
         Hotkeys: [E] Add Card | [R] Reset | [D] Deck Import | [S] Saved Decks | [Q] Draw Card
       </div>
+      <motion.div style={{
+        position: 'fixed',
+        bottom: 10,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        color: 'white',
+        opacity: 0.3,
+        fontSize: '0.8rem'
+      }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: deckCount > 0 ? 1 : 0 }}>
+        Cards in deck: {deckCount}
+      </motion.div>
       <div style={{
         position: 'fixed',
         bottom: 10,
@@ -331,7 +346,7 @@ function App() {
         Created by <a href="https://github.com/DootLord" style={{ color: 'white' }}>DootLord</a> 2025
       </div>
 
-    </div>
+    </div >
 
   )
 }
