@@ -43,7 +43,7 @@ function App() {
 
   // Socket.io
   useEffect(() => {
-    const socket = io('localhost:3000', {
+    const socket = io('wss://magic-together-sockets.dootlord.meme', {
       transports: ['websocket'],
       autoConnect: false
     })
